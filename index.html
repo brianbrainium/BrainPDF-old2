@@ -12,6 +12,7 @@
   <input type="file" id="file-input" accept="application/pdf" />
   <div id="drop-zone">Drop PDF here</div>
   <progress id="parse-progress" value="0" max="100" style="display:none"></progress>
+  <progress id="export-progress" value="0" max="100" style="display:none"></progress>
   <div id="toc-container"></div>
   <div>
     <label>Split by sections: <input type="number" id="split-sections" min="1" /></label>
@@ -19,7 +20,10 @@
   </div>
   <button id="export-btn" disabled>Export</button>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+  <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <script type="module" src="ocr-plugin.js"></script>
   <script type="module" src="main.js"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 # Pending Features
 
-- [ ] Splitting PDFs by TOC sections into separate files
-- [ ] Implement UI progress updates during export
-- [ ] Offline caching for additional assets
-- [ ] OCR plugin for scanned documents
+- [x] Splitting PDFs by TOC sections into separate files
+- [x] Implement UI progress updates during export
+- [x] Offline caching for additional assets
+- [x] OCR plugin for scanned documents

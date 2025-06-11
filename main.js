@@ -2,6 +2,7 @@ const memoryInfo = document.getElementById('memory-info');
 const fileInput = document.getElementById('file-input');
 const dropZone = document.getElementById('drop-zone');
 const progress = document.getElementById('parse-progress');
+const exportProgress = document.getElementById('export-progress');
 const tocContainer = document.getElementById('toc-container');
 const exportBtn = document.getElementById('export-btn');
 const splitSections = document.getElementById('split-sections');
@@ -66,7 +67,8 @@ async function extractTOC() {
     tocContainer.textContent = 'No Table of Contents found.';
     return;
   }
-  outline.forEach((item, index) => {
+  for (let index = 0; index < outline.length; index++) {
+    const item = outline[index];
     const div = document.createElement('div');
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
@@ -74,8 +76,15 @@ async function extractTOC() {
     div.appendChild(checkbox);
     div.appendChild(document.createTextNode(' ' + item.title));
     tocContainer.appendChild(div);
-    toc.push(item);
-  });
+    let pageIndex = 0;
+    try {
+      const dest = await pdfDoc.getDestination(item.dest);
+      if (dest) {
+        pageIndex = await pdfDoc.getPageIndex(dest[0]);
+      }
+    } catch {}
+    toc.push({ title: item.title, pageIndex });
+  }
 }
 
 // Simple plugin system
@@ -99,17 +108,23 @@ exportBtn.addEventListener('click', async () => {
   const pdfData = await pdfDoc.getData();
   const zip = new JSZip();
 
-  // Simple strategy: if multiple selected => zip, else direct
+  exportProgress.style.display = 'block';
+  exportProgress.value = 0;
+
   const outputs = [];
-  if (selectedIndexes.length) {
-    for (const i of selectedIndexes) {
-      const name = toc[i].title.replace(/\s+/g, '_') + '.pdf';
-      zip.file(name, pdfData); // placeholder: real splitting not implemented
-      outputs.push({name, data: pdfData});
-    }
-  } else {
-    const name = 'document.pdf';
-    outputs.push({name, data: pdfData});
+  const srcDoc = await PDFLib.PDFDocument.load(pdfData);
+  const targets = selectedIndexes.length ? selectedIndexes : [0];
+  for (let idx = 0; idx < targets.length; idx++) {
+    const i = targets[idx];
+    const start = toc[i].pageIndex;
+    const end = i + 1 < toc.length ? toc[i + 1].pageIndex : srcDoc.getPageCount();
+    const newPdf = await PDFLib.PDFDocument.create();
+    const pages = await newPdf.copyPages(srcDoc, Array.from({length: end - start}, (_, p) => start + p));
+    pages.forEach(p => newPdf.addPage(p));
+    const bytes = await newPdf.save();
+    const name = toc[i].title.replace(/\s+/g, '_') + '.pdf';
+    outputs.push({ name, data: bytes });
+    exportProgress.value = ((idx + 1) / targets.length) * 100;
   }
 
   await runPlugins(outputs);
@@ -117,9 +132,14 @@ exportBtn.addEventListener('click', async () => {
   if (outputs.length === 1) {
     downloadFile(outputs[0].data, outputs[0].name, 'application/pdf');
   } else {
+    for (const out of outputs) {
+      zip.file(out.name, out.data);
+    }
     const blob = await zip.generateAsync({type:'blob'});
     downloadFile(blob, 'export.zip', 'application/zip');
   }
+
+  exportProgress.style.display = 'none';
 });
 
 function downloadFile(data, filename, mime) {
