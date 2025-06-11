@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainPDF</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>BrainPDF</h1>
+  <p id="memory-info"></p>
+  <input type="file" id="file-input" accept="application/pdf" />
+  <div id="drop-zone">Drop PDF here</div>
+  <progress id="parse-progress" value="0" max="100" style="display:none"></progress>
+  <div id="toc-container"></div>
+  <div>
+    <label>Split by sections: <input type="number" id="split-sections" min="1" /></label>
+    <label>Or target size MB: <input type="number" id="split-size" min="1" /></label>
+  </div>
+  <button id="export-btn" disabled>Export</button>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>
