@@ -10,9 +10,11 @@ BrainPDF is a local‑first toolkit for splitting and exporting large PDF docume
 - **Parse** – extracts document metadata and table of contents with a progress bar.
 - **Select** – choose sections from an expandable TOC tree.
 - **Split** – by number of sections, target chunk size, or selected TOC nodes.
-- **Export** – download a single PDF/TXT directly or a ZIP when multiple files are generated.
+- **Export** – download a single PDF/TXT directly or a ZIP when multiple files are generated with progress feedback.
 - **Offline PWA** – installable app with service‑worker‑cached assets.
+- **Offline libraries** – caches external libraries and plugins for offline use.
 - **Plugin API** – register custom actions such as OCR or summarisation.
+- **Built-in OCR plugin** – extract text from scanned PDFs on export.
 
 ## Development
 

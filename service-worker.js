@@ -4,8 +4,11 @@ const ASSETS = [
   '/index.html',
   '/style.css',
   '/main.js',
+  '/ocr-plugin.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js'
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js',
+  'https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(
