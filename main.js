@@ -7,6 +7,9 @@ const exportBtn = document.getElementById('export-btn');
 const splitSections = document.getElementById('split-sections');
 const splitSize = document.getElementById('split-size');
 
+// Configure PDF.js worker for local use
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'libs/pdf.worker.min.js';
+
 let pdfDoc;
 let toc = [];
 

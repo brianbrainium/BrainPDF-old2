@@ -4,8 +4,9 @@ const ASSETS = [
   '/index.html',
   '/style.css',
   '/main.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.0/jszip.min.js'
+  '/libs/pdf.min.js',
+  '/libs/pdf.worker.min.js',
+  '/libs/jszip.min.js'
 ];
 self.addEventListener('install', event => {
   event.waitUntil(
