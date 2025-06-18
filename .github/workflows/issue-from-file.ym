@@ -1,0 +1,25 @@
+name: Issue from file
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'issues/**.md'
+
+jobs:
+  create_issue:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create Issue(s)
+        id: create_issue
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: ${{ github.event.head_commit.message }}
+          content-filepath: |
+            ${{ github.event.head_commit.added }}
+            ${{ github.event.head_commit.modified }}
+          labels: enhancement, auto-generated
