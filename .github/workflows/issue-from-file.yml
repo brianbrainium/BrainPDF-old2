@@ -1,72 +1,69 @@
 # .github/workflows/issue-from-file.yml
-
-# Robust version → works on first run, shallow clones, and exact folder matches
+# Robust & syntax‑clean version (no leading backslashes, correct indentation)
 
 name: Issue from file
 
 on:
-push:
-branches: \[main]
-paths:
-\- "issues/*.md"      # top‑level markdown specs
-\- "issues/\*\*/*.md"   # or deeper sub‑folders if you add them later
-workflow\_dispatch:        # manual trigger from the UI
+  push:
+    branches:
+      - main
+    paths:
+      - 'issues/*.md'      # top‑level markdown specs
+      - 'issues/**/*.md'   # deeper sub‑folders if any
+  workflow_dispatch:
 
 jobs:
-create\_issue:
-runs-on: ubuntu-latest
+  create_issue:
+    runs-on: ubuntu-latest
 
-```
-permissions:
-  contents: read   # checkout
-  issues: write    # open / edit Issues via API
+    permissions:
+      contents: read   # checkout code
+      issues: write    # create / edit Issues
 
-steps:
-  # 1 — Checkout full history so diff detection never errors out
-  - name: Checkout repo
-    uses: actions/checkout@v4
-    with:
-      fetch-depth: 0
+    steps:
+      # 1. Checkout full history so diff detection never errors out
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  # 2 — Detect which markdown files under `issues/` changed in *this push*
-  - name: Detect changed markdown files
-    id: changed
-    uses: tj-actions/changed-files@v44
-    with:
-      files: |
-        issues/*.md
-        issues/**/*.md
+      # 2. Detect which markdown files under `issues/` changed in this push
+      - name: Detect changed markdown files
+        id: changed
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            issues/*.md
+            issues/**/*.md
 
-  # 3 — Short‑circuit if nothing matched (keeps run green)
-  - name: Abort if no markdown files changed
-    if: steps.changed.outputs.any_changed != 'true'
-    run: echo "🟡 No .md files under 'issues/' were added/modified in this push — skipping Issue creation."
+      # 3. Exit early if nothing matched (keeps run green)
+      - name: Abort if no markdown files changed
+        if: steps.changed.outputs.any_changed != 'true'
+        run: echo '🟡 No .md files under "issues/" were added or modified — skipping Issue creation.'
 
-  # 4 — Create Issue(s) from every added / modified markdown file
-  - name: Create Issue(s)
-    if: steps.changed.outputs.any_changed == 'true'
-    id: create_issue
-    uses: peter-evans/create-issue-from-file@v5
-    with:
-      title: ${{ github.event.head_commit.message }}
-      content-filepath: ${{ steps.changed.outputs.added_modified_files }}
-      labels: enhancement, auto-generated
+      # 4. Create Issue(s) from every added / modified markdown file
+      - name: Create Issue(s)
+        if: steps.changed.outputs.any_changed == 'true'
+        id: create_issue
+        uses: peter-evans/create-issue-from-file@v5
+        with:
+          title: ${{ github.event.head_commit.message }}
+          content-filepath: ${{ steps.changed.outputs.added_modified_files }}
+          labels: enhancement, auto-generated
 
-  # 5 — OPTIONAL: Add each created Issue to a Project board
-  #       Comment out / delete if you’re not using Projects.
-  - name: Add Issue(s) to project board
-    if: steps.create_issue.outputs.issue-number != ''
-    uses: peter-evans/create-or-update-project-card@v2
-    with:
-      project-url: https://github.com/orgs/YOUR_ORG/projects/1   # ← change me
-      content-id: ${{ steps.create_issue.outputs.issue-number }}
-      content-type: Issue
-      status: Backlog
+      # 5. OPTIONAL — Add created Issue(s) to a Project board (uncomment & edit URL)
+      #- name: Add Issue(s) to project board
+      #  if: steps.create_issue.outputs.issue-number != ''
+      #  uses: peter-evans/create-or-update-project-card@v2
+      #  with:
+      #    project-url: https://github.com/orgs/YOUR_ORG/projects/1  # ← update
+      #    content-id: ${{ steps.create_issue.outputs.issue-number }}
+      #    content-type: Issue
+      #    status: Backlog
 
-  # 6 — Debug‑print which paths we processed (visible in log)
-  - name: Debug – list processed files
-    if: steps.changed.outputs.any_changed == 'true'
-    run: |
-      echo "🟢 Markdown files sent to create-issue-from-file:" && \
-      printf '%s\n' "${{ steps.changed.outputs.added_modified_files }}"
-```
+      # 6. Debug — list processed files (visible in log)
+      - name: Debug – list processed files
+        if: steps.changed.outputs.any_changed == 'true'
+        run: |
+          echo '🟢 Markdown files sent to create-issue-from-file:'
+          printf '%s\n' "${{ steps.changed.outputs.added_modified_files }}"
