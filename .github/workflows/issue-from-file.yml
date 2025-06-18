@@ -1,70 +1,63 @@
 # GitHub Actions — Convert markdown specs in `issues/` to real Issues
-# Save this file as .github/workflows/issue-from-file.yml
+# Robust version: works even on first commit, shallow clones, or re‑runs
+# Save as .github/workflows/issue-from-file.yml
 
 name: Issue from file
 
-# ────────────────────────────────────────────────────────────────
-# Triggers
-# - On pushes to main that add/modify markdown files under issues/
-# - Manual trigger via the "Run workflow" button (workflow_dispatch)
-# ────────────────────────────────────────────────────────────────
 on:
   push:
     branches: [main]
     paths:
-      - 'issues/**.md'
-  workflow_dispatch:
+      - 'issues/**.md'   # only fire when these files change
+  workflow_dispatch:      # allow manual runs from the UI
 
-# ────────────────────────────────────────────────────────────────
-# Job definition
-# ────────────────────────────────────────────────────────────────
 jobs:
   create_issue:
     runs-on: ubuntu-latest
 
-    # Minimum scopes for the default GITHUB_TOKEN to open Issues
+    # The default GITHUB_TOKEN now uses fine‑grained permissions
     permissions:
-      contents: read   # checkout code
-      issues: write    # create / edit Issues
+      contents: read      # checkout repo
+      issues: write       # create / edit Issues
 
     steps:
-      # 1. Check out the repository
+      # 1 Checkout the entire history (depth: 0) so diffing always works
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      # 2. Detect which markdown files in `issues/` changed in *this* commit
+      # 2 Find which markdown files under `issues/` were added or modified
       - name: Detect changed markdown files
-        id: files
-        run: |
-          # Get the list of paths matching issues/**/*.md for the current commit
-          CHANGED=$(git diff --name-only ${{ github.sha }} ${{ github.sha }}~1 | grep '^issues/.*\.md$' || true)
-          echo "paths=$CHANGED" >> "$GITHUB_OUTPUT"
+        id: changed
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            issues/**.md
 
-      # 3. Create Issue(s) for each changed file (skip if none)
+      # 3 Create Issue(s) only when we actually have files to process
       - name: Create Issue(s)
-        if: steps.files.outputs.paths != ''
+        if: steps.changed.outputs.any_changed == 'true'
         id: create_issue
         uses: peter-evans/create-issue-from-file@v5
         with:
-          # Use the commit message as a fallback title
           title: ${{ github.event.head_commit.message }}
-          # Pass newline‑separated list of files found in the previous step
-          content-filepath: ${{ steps.files.outputs.paths }}
+          # Newline‑separated list of added + modified files
+          content-filepath: ${{ steps.changed.outputs.added_modified_files }}
           labels: enhancement, auto-generated
 
-      # 4. OPTIONAL — Add newly created Issues to a Project board
-      #    Replace the project URL below or remove this step completely if you
-      #    don't use Projects.
+      # 4 OPTIONAL — Add created Issue(s) to a Project board
+      #    Remove this step if you don't use GitHub Projects.
       - name: Add Issue(s) to project board
         if: steps.create_issue.outputs.issue-number != ''
         uses: peter-evans/create-or-update-project-card@v2
         with:
-          project-url: https://github.com/orgs/YOUR_ORG/projects/1   # ⬅️ CHANGE ME
+          project-url: https://github.com/orgs/YOUR_ORG/projects/1   # ← replace
           content-id: ${{ steps.create_issue.outputs.issue-number }}
           content-type: Issue
           status: Backlog
 
-      # 5. Debug output when no markdown files were found (optional)
-      - name: No matching files found
-        if: steps.files.outputs.paths == ''
-        run: echo "No markdown files in 'issues/' were added or modified in this commit — skipping Issue creation."
+      # 5 Else branch: emit a friendly note when no files matched (keeps the run green)
+      - name: No matching markdown files
+        if: steps.changed.outputs.any_changed == 'false'
+        run: echo "No markdown files under 'issues/' were added or modified in this commit — skipping Issue creation."
