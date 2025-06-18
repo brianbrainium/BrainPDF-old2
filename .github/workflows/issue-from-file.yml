@@ -48,7 +48,10 @@ jobs:
         uses: peter-evans/create-issue-from-file@v5
         with:
           title: ${{ github.event.head_commit.message }}
-          content-filepath: ${{ steps.changed.outputs.added_modified_files }}
+          # forcing explicit list so action never sees an empty string
+          content-filepath: | 
+            ${{ steps.changed.outputs.added_files }}
+            ${{ steps.changed.outputs.modified_files }}
           labels: enhancement, auto-generated
 
       # 5. OPTIONAL — Add created Issue(s) to a Project board (uncomment & edit URL)
