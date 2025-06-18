@@ -1,25 +1,70 @@
+# GitHub Actions — Convert markdown specs in `issues/` to real Issues
+# Save this file as .github/workflows/issue-from-file.yml
+
 name: Issue from file
+
+# ────────────────────────────────────────────────────────────────
+# Triggers
+# - On pushes to main that add/modify markdown files under issues/
+# - Manual trigger via the "Run workflow" button (workflow_dispatch)
+# ────────────────────────────────────────────────────────────────
 on:
   push:
     branches: [main]
     paths:
       - 'issues/**.md'
+  workflow_dispatch:
 
+# ────────────────────────────────────────────────────────────────
+# Job definition
+# ────────────────────────────────────────────────────────────────
 jobs:
   create_issue:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      issues: write
-    steps:
-      - uses: actions/checkout@v4
 
+    # Minimum scopes for the default GITHUB_TOKEN to open Issues
+    permissions:
+      contents: read   # checkout code
+      issues: write    # create / edit Issues
+
+    steps:
+      # 1. Check out the repository
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 2. Detect which markdown files in `issues/` changed in *this* commit
+      - name: Detect changed markdown files
+        id: files
+        run: |
+          # Get the list of paths matching issues/**/*.md for the current commit
+          CHANGED=$(git diff --name-only ${{ github.sha }} ${{ github.sha }}~1 | grep '^issues/.*\.md$' || true)
+          echo "paths=$CHANGED" >> "$GITHUB_OUTPUT"
+
+      # 3. Create Issue(s) for each changed file (skip if none)
       - name: Create Issue(s)
+        if: steps.files.outputs.paths != ''
         id: create_issue
         uses: peter-evans/create-issue-from-file@v5
         with:
+          # Use the commit message as a fallback title
           title: ${{ github.event.head_commit.message }}
-          content-filepath: |
-            ${{ github.event.head_commit.added }}
-            ${{ github.event.head_commit.modified }}
+          # Pass newline‑separated list of files found in the previous step
+          content-filepath: ${{ steps.files.outputs.paths }}
           labels: enhancement, auto-generated
+
+      # 4. OPTIONAL — Add newly created Issues to a Project board
+      #    Replace the project URL below or remove this step completely if you
+      #    don't use Projects.
+      - name: Add Issue(s) to project board
+        if: steps.create_issue.outputs.issue-number != ''
+        uses: peter-evans/create-or-update-project-card@v2
+        with:
+          project-url: https://github.com/orgs/YOUR_ORG/projects/1   # ⬅️ CHANGE ME
+          content-id: ${{ steps.create_issue.outputs.issue-number }}
+          content-type: Issue
+          status: Backlog
+
+      # 5. Debug output when no markdown files were found (optional)
+      - name: No matching files found
+        if: steps.files.outputs.paths == ''
+        run: echo "No markdown files in 'issues/' were added or modified in this commit — skipping Issue creation."
