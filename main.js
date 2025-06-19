@@ -1,32 +1,60 @@
-const memoryInfo = document.getElementById('memory-info');
-const fileInput = document.getElementById('file-input');
-const dropZone = document.getElementById('drop-zone');
-const progress = document.getElementById('parse-progress');
+// ---------- DOM references -------------------------------------------------
+let memoryInfo = document.getElementById('memory-info');
+if (!memoryInfo) {                     // fallback for older HTML versions
+  memoryInfo           = document.createElement('p');
+  memoryInfo.id        = 'memory-info';
+  memoryInfo.style.fontStyle = 'italic';
+  document.body.prepend(memoryInfo);
+}
+
+const fileInput      = document.getElementById('file-input');
+const dropZone       = document.getElementById('drop-zone');
+const progress       = document.getElementById('parse-progress');
 const exportProgress = document.getElementById('export-progress');
-const tocContainer = document.getElementById('toc-container');
-const exportBtn = document.getElementById('export-btn');
-const splitSections = document.getElementById('split-sections');
-const splitSize = document.getElementById('split-size');
+const tocContainer   = document.getElementById('toc-container');
+const exportBtn      = document.getElementById('export-btn');
+const splitSections  = document.getElementById('split-sections');
+const splitSize      = document.getElementById('split-size');
 
 let pdfDoc;
 let toc = [];
 
-// Memory detection
-function updateMemoryInfo() {
-  const mem = navigator.deviceMemory || 0; // approximate in GB
-  const avail = mem ? mem * 1024 : 0; // convert to MB
-  const parseOverhead = 200; // MB reserved for parsing
-  const maxUpload = avail ? Math.max(avail - parseOverhead, 0) : 'unknown';
-  memoryInfo.textContent = `Approx. available memory: ${avail} MB. Maximum safe upload: ${maxUpload} MB.`;
+// ---------- Memory guardrails ---------------------------------------------
+const PARSE_OVERHEAD_MB = 200;          // reserved head-room for parsing
+let   maxUploadMB       = null;         // computed at runtime
+
+function updateMemoryInfo () {
+  const memGB   = navigator.deviceMemory || 0;     // may be 0/undefined
+  const availMB = memGB ? memGB * 1024 : 0;
+  maxUploadMB   = availMB ? Math.max(availMB - PARSE_OVERHEAD_MB, 0) : null;
+
+  const availStr = availMB ? `${availMB} MB` : 'unknown';
+  const maxStr   = maxUploadMB !== null ? `${maxUploadMB} MB` : 'unknown';
+  memoryInfo.textContent =
+    `Approx. available memory: ${availStr}. Maximum safe upload: ${maxStr}.`;
 }
 updateMemoryInfo();
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) updateMemoryInfo();
+});
+
+function fitsMemory (file) {
+  if (maxUploadMB === null) return true;            // deviceMemory unknown
+  const sizeMB = file.size / (1024 * 1024);
+  return sizeMB <= maxUploadMB;
+}
 
 // Handle file selection
 fileInput.addEventListener('change', (e) => {
   const file = e.target.files[0];
-  if (file) {
-    loadPDF(file);
+  if (!file) return;
+  if (!fitsMemory(file)) {
+    alert(`This file is ${(file.size/1048576).toFixed(1)} MB – above the safe ` +
+          `limit of ${maxUploadMB} MB for this device.`);
+    e.target.value = '';             // reset picker
+    return;
   }
+  loadPDF(file);
 });
 
 // Drag and drop
@@ -41,7 +69,13 @@ fileInput.addEventListener('change', (e) => {
 
 dropZone.addEventListener('drop', e => {
   const file = e.dataTransfer.files[0];
-  if (file) loadPDF(file);
+  if (!file) return;
+  if (!fitsMemory(file)) {
+    alert(`Dropped file is ${(file.size/1048576).toFixed(1)} MB – exceeds the ` +
+          `safe limit of ${maxUploadMB} MB. Please use a smaller file.`);
+    return;
+  }
+  loadPDF(file);
 });
 
 async function loadPDF(file) {
