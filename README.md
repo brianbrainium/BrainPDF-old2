@@ -21,3 +21,11 @@ BrainPDF is a local‑first toolkit for splitting and exporting large PDF docume
 Open `index.html` in a modern browser. The service worker will cache assets after the first load so you can use the app offline.
 
 The main logic lives in `main.js`. Plugins can call `registerPlugin(fn)` where `fn` is an async function that receives an array of output objects to modify or add files before export.
+
+## Developer / QA tips
+### Force a tiny upload limit
+When testing the oversize-file guardrail on machines with plenty of RAM, add
+`?maxUploadMB=<number>` to the URL, e.g.  
+`https://brianbrainium.github.io/BrainPDF/?maxUploadMB=10`  
+The banner will show "(debug override)", and uploads above that value will be
+rejected. Remove the query string to return to automatic detection.

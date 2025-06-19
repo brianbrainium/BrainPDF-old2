@@ -23,15 +23,27 @@ let toc = [];
 const PARSE_OVERHEAD_MB = 200;          // reserved head-room for parsing
 let   maxUploadMB       = null;         // computed at runtime
 
+// ---------- DEBUG override via query param -------------------------------
+function getDebugMaxUpload () {
+  const params = new URLSearchParams(window.location.search);
+  const raw    = params.get('maxUploadMB');
+  if (!raw) return null;
+  const val = parseInt(raw, 10);
+  return Number.isFinite(val) && val > 0 ? val : null;
+}
+const DEBUG_OVERRIDE_MB = getDebugMaxUpload();
+
 function updateMemoryInfo () {
   const memGB   = navigator.deviceMemory || 0;     // may be 0/undefined
   const availMB = memGB ? memGB * 1024 : 0;
-  maxUploadMB   = availMB ? Math.max(availMB - PARSE_OVERHEAD_MB, 0) : null;
+  maxUploadMB = DEBUG_OVERRIDE_MB ??
+                (availMB ? Math.max(availMB - PARSE_OVERHEAD_MB, 0) : null);
 
   const availStr = availMB ? `${availMB} MB` : 'unknown';
   const maxStr   = maxUploadMB !== null ? `${maxUploadMB} MB` : 'unknown';
   memoryInfo.textContent =
-    `Approx. available memory: ${availStr}. Maximum safe upload: ${maxStr}.`;
+    `Approx. available memory: ${availStr}. Maximum safe upload: ${maxStr}` +
+    (DEBUG_OVERRIDE_MB ? ' (debug override).' : '.');
 }
 updateMemoryInfo();
 document.addEventListener('visibilitychange', () => {
