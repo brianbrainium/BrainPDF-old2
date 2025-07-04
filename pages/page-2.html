@@ -34,13 +34,20 @@
         tocDiv.textContent = 'TOC not accessible.';
         return;
       }
-      const ul = document.createElement('ul');
-      outline.forEach(item => {
-        const li = document.createElement('li');
-        li.textContent = item.title;
-        ul.appendChild(li);
-      });
-      tocDiv.appendChild(ul);
+      function render(items) {
+        const ul = document.createElement('ul');
+        for (const it of items) {
+          const li = document.createElement('li');
+          li.textContent = it.title;
+          if (it.items && it.items.length) {
+            li.appendChild(render(it.items));
+          }
+          ul.appendChild(li);
+        }
+        return ul;
+      }
+
+      tocDiv.appendChild(render(outline));
     });
 
     document.querySelectorAll('nav a').forEach(a => {
