@@ -40,3 +40,5 @@ only the first half of pages from a PDF for testing purposes.
 
 Run `npm test` to execute the included Node script which verifies the half-page
 parsing helper.
+You can also open `half-test.html` in the browser and select a PDF to download
+the first half of its pages.

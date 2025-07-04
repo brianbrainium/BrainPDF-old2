@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Half-page Parser Test</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Half-page Parser Test</h1>
+  <input type="file" id="pdf-input" accept="application/pdf" />
+  <button id="parse-btn">Parse Half</button>
+  <a id="download-link" style="display:none"></a>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script>
+    async function parseHalf(file) {
+      const buf = new Uint8Array(await file.arrayBuffer());
+      const doc = await PDFLib.PDFDocument.load(buf);
+      const total = doc.getPageCount();
+      const half = Math.ceil(total / 2);
+      const out = await PDFLib.PDFDocument.create();
+      const pages = await out.copyPages(doc, Array.from({length: half}, (_, i) => i));
+      pages.forEach(p => out.addPage(p));
+      const data = await out.save();
+      return { bytes: data, pages: half };
+    }
+
+    document.getElementById('parse-btn').addEventListener('click', async () => {
+      const input = document.getElementById('pdf-input');
+      if (!input.files.length) {
+        alert('Please select a PDF file first.');
+        return;
+      }
+      const { bytes, pages } = await parseHalf(input.files[0]);
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.getElementById('download-link');
+      link.href = url;
+      link.download = 'half.pdf';
+      link.textContent = `Download first ${pages} pages`;
+      link.style.display = 'inline';
+    });
+  </script>
+</body>
+</html>
