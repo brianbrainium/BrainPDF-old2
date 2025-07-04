@@ -7,11 +7,23 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="half-test.html">Half-page Parser</a>
+    <a href="memory.html">Memory Calculator</a>
+  </nav>
   <h1>PDF Memory Usage</h1>
   <p>Use this page to gauge how much memory is consumed when processing a PDF.</p>
   <input type="file" id="mem-file" accept="application/pdf" />
   <pre id="mem-report"></pre>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
   <script type="module" src="memory.js"></script>
+  <script>
+    document.querySelectorAll('nav a').forEach(a => {
+      if (a.getAttribute('href') === window.location.pathname.split('/').pop()) {
+        a.classList.add('active');
+      }
+    });
+  </script>
 </body>
 </html>
