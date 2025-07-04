@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Size Checker</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="../half-test.html">Half-page Parser</a>
+    <a href="../memory.html">Memory Calculator</a>
+    <a href="page-3.html">Size Checker</a>
+  </nav>
+  <h1>PDF Size Checker</h1>
+  <input type="file" id="pdf-input" accept="application/pdf">
+  <p id="size-output"></p>
+  <script>
+    document.getElementById('pdf-input').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      const output = document.getElementById('size-output');
+      if (file) {
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        output.textContent = `File size: ${sizeMB} MB`;
+      } else {
+        output.textContent = '';
+      }
+    });
+    document.querySelectorAll('nav a').forEach(a => {
+      if (a.getAttribute('href').split('/').pop() ===
+          window.location.pathname.split('/').pop()) {
+        a.classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>
