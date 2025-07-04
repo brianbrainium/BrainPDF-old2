@@ -16,12 +16,15 @@ BrainPDF is a local‑first toolkit for splitting and exporting large PDF docume
 - **Plugin API** – register custom actions such as OCR or summarisation.
 - **Built-in OCR plugin** – extract text from scanned PDFs on export.
 - **Half-page parsing helper** – load only the first half of a PDF for tests.
+- **Memory usage test page** – measure processing memory to refine upload limits.
 
 ## Development
 
 Open `index.html` in a modern browser. The service worker will cache assets after the first load so you can use the app offline.
 
 The main logic lives in `main.js`. Plugins can call `registerPlugin(fn)` where `fn` is an async function that receives an array of output objects to modify or add files before export.
+
+To estimate how much memory your device uses when opening a PDF, open `memory.html`. After selecting a test document the page will display the memory consumed during parsing and the recommended maximum upload size.
 
 ## Developer / QA tips
 ### Force a tiny upload limit

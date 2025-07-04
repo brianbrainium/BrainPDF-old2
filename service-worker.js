@@ -5,6 +5,8 @@ const ASSETS = [
   '/half-test.html',
   '/style.css',
   '/main.js',
+  '/memory.html',
+  '/memory.js',
   '/ocr-plugin.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
