@@ -3,6 +3,7 @@ const ASSETS = [
   '/',
   '/index.html',
   '/half-test.html',
+  '/pages/page-1.html',
   '/style.css',
   '/main.js',
   '/memory.html',

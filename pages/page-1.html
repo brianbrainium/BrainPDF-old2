@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Access Check</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="../half-test.html">Half-page Parser</a>
+    <a href="page-1.html">PDF Access Check</a>
+  </nav>
+  <h1>PDF Access Check</h1>
+  <p>Verify that <code>testPDF.pdf</code> is accessible.</p>
+  <button id="check-btn">Check access</button>
+  <pre id="result"></pre>
+  <script>
+    document.getElementById('check-btn').addEventListener('click', async () => {
+      const result = document.getElementById('result');
+      try {
+        const resp = await fetch('../testPDF.pdf');
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        result.textContent = 'PDF is accessible.';
+      } catch (err) {
+        result.textContent = 'Failed to fetch PDF: ' + err.message;
+      }
+    });
+  </script>
+  <script>
+    document.querySelectorAll('nav a').forEach(a => {
+      if (a.getAttribute('href') === window.location.pathname.split('/').pop()) {
+        a.classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>
