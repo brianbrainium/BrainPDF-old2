@@ -18,15 +18,52 @@
   <h1>PDF Size Checker</h1>
   <input type="file" id="pdf-input" accept="application/pdf">
   <p id="size-output"></p>
+  <pre id="memory-output"></pre>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
   <script>
+    const memOutput = document.getElementById('memory-output');
+
+    function formatBytes(bytes) {
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    async function measureMemory(file) {
+      if (!performance.memory) {
+        memOutput.textContent = 'performance.memory API not available in this browser.';
+        return;
+      }
+      const before = performance.memory.usedJSHeapSize;
+      const arrayBuffer = await file.arrayBuffer();
+      const typedarray = new Uint8Array(arrayBuffer);
+      await pdfjsLib.getDocument({ data: typedarray }).promise;
+      const after = performance.memory.usedJSHeapSize;
+      const delta = after - before;
+
+      const deviceMemGB = navigator.deviceMemory || 0;
+      const availMB = deviceMemGB ? deviceMemGB * 1024 : 0;
+      const overheadMB = delta / (1024 * 1024);
+      const maxUploadMB = availMB
+        ? Math.max(availMB - overheadMB, 0).toFixed(2)
+        : 'unknown';
+
+      const availStr = availMB ? availMB.toFixed(2) + ' MB' : 'unknown';
+
+      memOutput.textContent =
+        `Used memory: ${formatBytes(delta)}\n` +
+        `Approx. available memory: ${availStr}\n` +
+        `Recommended maximum upload: ${maxUploadMB} MB`;
+    }
+
     document.getElementById('pdf-input').addEventListener('change', function(e) {
       const file = e.target.files[0];
       const output = document.getElementById('size-output');
       if (file) {
         const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
         output.textContent = `File size: ${sizeMB} MB`;
+        measureMemory(file);
       } else {
         output.textContent = '';
+        memOutput.textContent = '';
       }
     });
     document.querySelectorAll('nav a').forEach(a => {
