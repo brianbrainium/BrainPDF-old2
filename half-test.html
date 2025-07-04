@@ -14,52 +14,89 @@
   <h1>Half-page Parser Test</h1>
   <input type="file" id="pdf-input" accept="application/pdf" />
   <button id="parse-btn">Parse Halves</button>
+  <progress id="upload-progress" value="0" max="100" style="display:none"></progress>
+  <progress id="split-progress" value="0" max="100" style="display:none"></progress>
   <div id="halves-container"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script>
-    async function splitHalves(file) {
-      const buf = new Uint8Array(await file.arrayBuffer());
-      const doc = await PDFLib.PDFDocument.load(buf);
+    async function splitHalves(buffer, progressCb) {
+      if (progressCb) progressCb(10);
+      const doc = await PDFLib.PDFDocument.load(buffer);
+      if (progressCb) progressCb(20);
       const total = doc.getPageCount();
       const half = Math.ceil(total / 2);
 
       const first = await PDFLib.PDFDocument.create();
       const firstPages = await first.copyPages(doc, Array.from({ length: half }, (_, i) => i));
       firstPages.forEach(p => first.addPage(p));
+      if (progressCb) progressCb(50);
 
       const second = await PDFLib.PDFDocument.create();
       const secondPages = await second.copyPages(doc, Array.from({ length: total - half }, (_, i) => i + half));
       secondPages.forEach(p => second.addPage(p));
+      if (progressCb) progressCb(80);
 
-      return {
+      const result = {
         firstBytes: await first.save(),
         secondBytes: await second.save(),
         firstPages: half,
         secondPages: total - half,
       };
+      if (progressCb) progressCb(100);
+      return result;
     }
 
-    document.getElementById('parse-btn').addEventListener('click', async () => {
+    document.getElementById('parse-btn').addEventListener('click', () => {
       const input = document.getElementById('pdf-input');
       if (!input.files.length) {
         alert('Please select a PDF file first.');
         return;
       }
-      const { firstBytes, secondBytes } = await splitHalves(input.files[0]);
-      const container = document.getElementById('halves-container');
-      container.innerHTML = '';
 
-      [firstBytes, secondBytes].forEach(bytes => {
-        const blob = new Blob([bytes], { type: 'application/pdf' });
-        const url = URL.createObjectURL(blob);
-        const frame = document.createElement('iframe');
-        frame.src = url;
-        frame.width = '100%';
-        frame.height = '400';
-        frame.style.marginTop = '1rem';
-        container.appendChild(frame);
-      });
+      const file = input.files[0];
+      const uploadBar = document.getElementById('upload-progress');
+      const splitBar = document.getElementById('split-progress');
+
+      uploadBar.style.display = 'block';
+      uploadBar.value = 0;
+
+      const reader = new FileReader();
+      reader.onprogress = e => {
+        if (e.lengthComputable) {
+          uploadBar.value = (e.loaded / e.total) * 100;
+        }
+      };
+      reader.onload = async () => {
+        uploadBar.value = 100;
+        uploadBar.style.display = 'none';
+
+        splitBar.style.display = 'block';
+        splitBar.value = 0;
+
+        const buffer = new Uint8Array(reader.result);
+        const { firstBytes, secondBytes } = await splitHalves(buffer, pct => {
+          splitBar.value = pct;
+        });
+
+        splitBar.style.display = 'none';
+
+        const container = document.getElementById('halves-container');
+        container.innerHTML = '';
+
+        [firstBytes, secondBytes].forEach(bytes => {
+          const blob = new Blob([bytes], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          const frame = document.createElement('iframe');
+          frame.src = url;
+          frame.width = '100%';
+          frame.height = '400';
+          frame.style.marginTop = '1rem';
+          container.appendChild(frame);
+        });
+      };
+
+      reader.readAsArrayBuffer(file);
     });
   </script>
   <script>
