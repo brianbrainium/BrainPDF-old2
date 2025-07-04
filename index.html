@@ -7,6 +7,10 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="half-test.html">Half-page Parser</a>
+  </nav>
   <h1>BrainPDF</h1>
   <p id="version-info"></p>
   <div class="happy-face" aria-label="happy face">😊</div>
@@ -27,5 +31,12 @@
   <script src="https://unpkg.com/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
   <script type="module" src="ocr-plugin.js"></script>
   <script type="module" src="main.js"></script>
+  <script>
+    document.querySelectorAll('nav a').forEach(a => {
+      if (a.getAttribute('href') === window.location.pathname.split('/').pop()) {
+        a.classList.add('active');
+      }
+    });
+  </script>
 </body>
 </html>
