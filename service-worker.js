@@ -2,6 +2,7 @@ const CACHE_NAME = 'brainpdf-cache-v1';
 const ASSETS = [
   '/',
   '/index.html',
+  '/half-test.html',
   '/style.css',
   '/main.js',
   '/ocr-plugin.js',
