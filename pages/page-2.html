@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF TOC Viewer</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="../half-test.html">Half-page Parser</a>
+    <a href="../memory.html">Memory Calculator</a>
+    <a href="page-2.html">TOC Viewer</a>
+  </nav>
+  <h1>PDF TOC Viewer</h1>
+  <input type="file" id="pdf-input" accept="application/pdf">
+  <div id="toc"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
+  <script type="module">
+    const input = document.getElementById('pdf-input');
+    const tocDiv = document.getElementById('toc');
+
+    input.addEventListener('change', async () => {
+      const file = input.files[0];
+      if (!file) return;
+      const buffer = await file.arrayBuffer();
+      const pdfDoc = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
+      const outline = await pdfDoc.getOutline();
+      tocDiv.innerHTML = '';
+      if (!outline) {
+        tocDiv.textContent = 'TOC not accessible.';
+        return;
+      }
+      const ul = document.createElement('ul');
+      outline.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item.title;
+        ul.appendChild(li);
+      });
+      tocDiv.appendChild(ul);
+    });
+
+    document.querySelectorAll('nav a').forEach(a => {
+      if (a.getAttribute('href').split('/').pop() === window.location.pathname.split('/').pop()) {
+        a.classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>
