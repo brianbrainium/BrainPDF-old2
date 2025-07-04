@@ -13,9 +13,10 @@ async function measureMemory(file) {
   const before = performance.memory.usedJSHeapSize;
   const arrayBuffer = await file.arrayBuffer();
   const typedarray = new Uint8Array(arrayBuffer);
-  await pdfjsLib.getDocument({ data: typedarray }).promise;
+  const pdfDoc = await pdfjsLib.getDocument({ data: typedarray }).promise;
   const after = performance.memory.usedJSHeapSize;
   const delta = after - before;
+  await pdfDoc.destroy();
 
   const deviceMemGB = navigator.deviceMemory || 0;
   const availMB = deviceMemGB ? deviceMemGB * 1024 : 0;
