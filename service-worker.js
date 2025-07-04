@@ -2,8 +2,10 @@ const CACHE_NAME = 'brainpdf-cache-v1';
 const ASSETS = [
   '/',
   '/index.html',
+  '/toc-inspector.html',
   '/style.css',
   '/main.js',
+  '/toc-inspector.js',
   '/ocr-plugin.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
@@ -28,3 +30,4 @@ self.addEventListener('fetch', event => {
     caches.match(event.request).then(res => res || fetch(event.request))
   );
 });
+

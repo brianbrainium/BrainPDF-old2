@@ -16,10 +16,13 @@ BrainPDF is a local‑first toolkit for splitting and exporting large PDF docume
 - **Plugin API** – register custom actions such as OCR or summarisation.
 - **Built-in OCR plugin** – extract text from scanned PDFs on export.
 - **Half-page parsing helper** – load only the first half of a PDF for tests.
+- **TOC Inspector** – standalone page to check if a PDF's table of contents is
+  recognised.
 
 ## Development
 
 Open `index.html` in a modern browser. The service worker will cache assets after the first load so you can use the app offline.
+For a quick check that a PDF's outline is compatible, open `toc-inspector.html` and upload your file.
 
 The main logic lives in `main.js`. Plugins can call `registerPlugin(fn)` where `fn` is an async function that receives an array of output objects to modify or add files before export.
 

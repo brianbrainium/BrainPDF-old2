@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BrainPDF – TOC Inspector</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>BrainPDF – TOC Inspector</h1>
+  <input type="file" id="file-input" accept="application/pdf" />
+  <div id="drop-zone">Drop PDF here</div>
+  <progress id="parse-progress" value="0" max="100" style="display:none"></progress>
+  <div id="result"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
+  <script type="module" src="toc-inspector.js"></script>
+</body>
+</html>
