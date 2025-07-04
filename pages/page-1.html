@@ -42,6 +42,7 @@
         const pageText = content.items.map(it => it.str).join(' ');
         text += pageText + '\n';
         progress.value = (i / pdf.numPages) * 100;
+        await new Promise(r => setTimeout(r, 0));
       }
       progress.style.display = 'none';
       document.getElementById('text-output').textContent = text;
