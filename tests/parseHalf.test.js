@@ -1,17 +1,22 @@
 const fs = require('fs');
 const { PDFDocument } = require('pdf-lib');
-const { extractHalf } = require('../parseHalf');
+const { extractHalves } = require('../parseHalf');
 
 (async () => {
   const data = fs.readFileSync('testPDF.pdf');
   const doc = await PDFDocument.load(data);
   const total = doc.getPageCount();
-  const halfBytes = await extractHalf(data);
-  const halfDoc = await PDFDocument.load(halfBytes);
-  const halfPages = halfDoc.getPageCount();
-  if (halfPages !== Math.ceil(total / 2)) {
-    console.error(`Expected ${Math.ceil(total / 2)} pages, got ${halfPages}`);
+  const { first, second } = await extractHalves(data);
+  const firstDoc = await PDFDocument.load(first);
+  const secondDoc = await PDFDocument.load(second);
+  const half = Math.ceil(total / 2);
+  if (firstDoc.getPageCount() !== half) {
+    console.error(`Expected first half to have ${half} pages, got ${firstDoc.getPageCount()}`);
     process.exit(1);
   }
-  console.log('parseHalf test passed.');
+  if (secondDoc.getPageCount() !== total - half) {
+    console.error(`Expected second half to have ${total - half} pages, got ${secondDoc.getPageCount()}`);
+    process.exit(1);
+  }
+  console.log('parseHalves test passed.');
 })();

@@ -13,21 +13,31 @@
   </nav>
   <h1>Half-page Parser Test</h1>
   <input type="file" id="pdf-input" accept="application/pdf" />
-  <button id="parse-btn">Parse Half</button>
-  <a id="download-link" style="display:none"></a>
+  <button id="parse-btn">Parse Halves</button>
+  <div id="halves-container"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script>
-    async function parseHalf(file) {
+    async function splitHalves(file) {
       const buf = new Uint8Array(await file.arrayBuffer());
       const doc = await PDFLib.PDFDocument.load(buf);
       const total = doc.getPageCount();
       const half = Math.ceil(total / 2);
-      const out = await PDFLib.PDFDocument.create();
-      const pages = await out.copyPages(doc, Array.from({length: half}, (_, i) => i));
-      pages.forEach(p => out.addPage(p));
-      const data = await out.save();
-      return { bytes: data, pages: half };
+
+      const first = await PDFLib.PDFDocument.create();
+      const firstPages = await first.copyPages(doc, Array.from({ length: half }, (_, i) => i));
+      firstPages.forEach(p => first.addPage(p));
+
+      const second = await PDFLib.PDFDocument.create();
+      const secondPages = await second.copyPages(doc, Array.from({ length: total - half }, (_, i) => i + half));
+      secondPages.forEach(p => second.addPage(p));
+
+      return {
+        firstBytes: await first.save(),
+        secondBytes: await second.save(),
+        firstPages: half,
+        secondPages: total - half,
+      };
     }
 
     document.getElementById('parse-btn').addEventListener('click', async () => {
@@ -36,14 +46,20 @@
         alert('Please select a PDF file first.');
         return;
       }
-      const { bytes, pages } = await parseHalf(input.files[0]);
-      const blob = new Blob([bytes], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
-      const link = document.getElementById('download-link');
-      link.href = url;
-      link.download = 'half.pdf';
-      link.textContent = `Download first ${pages} pages`;
-      link.style.display = 'inline';
+      const { firstBytes, secondBytes } = await splitHalves(input.files[0]);
+      const container = document.getElementById('halves-container');
+      container.innerHTML = '';
+
+      [firstBytes, secondBytes].forEach(bytes => {
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const frame = document.createElement('iframe');
+        frame.src = url;
+        frame.width = '100%';
+        frame.height = '400';
+        frame.style.marginTop = '1rem';
+        container.appendChild(frame);
+      });
     });
   </script>
   <script>

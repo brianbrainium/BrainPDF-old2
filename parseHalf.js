@@ -16,4 +16,28 @@ async function extractHalf(pdfBytes) {
   return await newPdf.save();
 }
 
-module.exports = { extractHalf };
+/**
+ * Split a PDF file into two halves.
+ * @param {Uint8Array|Buffer} pdfBytes - The PDF file bytes.
+ * @returns {Promise<{first: Uint8Array, second: Uint8Array}>} Bytes for each half.
+ */
+async function extractHalves(pdfBytes) {
+  const doc = await PDFDocument.load(pdfBytes);
+  const total = doc.getPageCount();
+  const halfCount = Math.ceil(total / 2);
+
+  const firstPdf = await PDFDocument.create();
+  const firstPages = await firstPdf.copyPages(doc, Array.from({ length: halfCount }, (_, i) => i));
+  firstPages.forEach(p => firstPdf.addPage(p));
+
+  const secondPdf = await PDFDocument.create();
+  const secondPages = await secondPdf.copyPages(doc, Array.from({ length: total - halfCount }, (_, i) => i + halfCount));
+  secondPages.forEach(p => secondPdf.addPage(p));
+
+  return {
+    first: await firstPdf.save(),
+    second: await secondPdf.save(),
+  };
+}
+
+module.exports = { extractHalf, extractHalves };
