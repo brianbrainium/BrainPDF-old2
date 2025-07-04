@@ -4,7 +4,7 @@
   "description": "BrainPDF is a local‑first toolkit for splitting and exporting large PDF documents right in the browser. It works completely offline as a Progressive Web App (PWA) so your files never leave your machine.",
   "main": "main.js",
   "scripts": {
-    "test": "node tests/parseHalf.test.js"
+    "test": "node tests/parseHalf.test.js && node tests/pdfToText.test.js && node tests/tocViewer.test.js"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +12,7 @@
   "type": "commonjs",
   "dependencies": {
     "pdf-lib": "^1.17.1",
-    "pdf-parse": "^1.1.1"
+    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^5.3.31"
   }
 }
