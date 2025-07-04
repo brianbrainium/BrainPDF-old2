@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF to Text</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="../half-test.html">Half-page Parser</a>
+    <a href="page-1.html">PDF to Text</a>
+  </nav>
+  <h1>PDF to Text</h1>
+  <input type="file" id="pdf-input" accept="application/pdf">
+  <button id="convert-btn">Convert</button>
+  <a id="download-link" style="display:none"></a>
+  <pre id="text-output"></pre>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
+  <script type="module">
+    document.getElementById('convert-btn').addEventListener('click', async () => {
+      const input = document.getElementById('pdf-input');
+      if (!input.files.length) {
+        alert('Please select a PDF file first.');
+        return;
+      }
+      const file = input.files[0];
+      const buffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
+      let text = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        const pageText = content.items.map(it => it.str).join(' ');
+        text += pageText + '\n';
+      }
+      document.getElementById('text-output').textContent = text;
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.getElementById('download-link');
+      link.href = url;
+      link.download = file.name.replace(/\.pdf$/i, '.txt');
+      link.textContent = 'Download TXT';
+      link.style.display = 'inline';
+    });
+
+    document.querySelectorAll('nav a').forEach(a => {
+      if (a.getAttribute('href').split('/').pop() === window.location.pathname.split('/').pop()) {
+        a.classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>
