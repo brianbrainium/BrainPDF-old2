@@ -7,6 +7,10 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="half-test.html">Half-page Parser</a>
+  </nav>
   <h1>Half-page Parser Test</h1>
   <input type="file" id="pdf-input" accept="application/pdf" />
   <button id="parse-btn">Parse Half</button>
@@ -40,6 +44,13 @@
       link.download = 'half.pdf';
       link.textContent = `Download first ${pages} pages`;
       link.style.display = 'inline';
+    });
+  </script>
+  <script>
+    document.querySelectorAll('nav a').forEach(a => {
+      if (a.getAttribute('href') === window.location.pathname.split('/').pop()) {
+        a.classList.add('active');
+      }
     });
   </script>
 </body>
