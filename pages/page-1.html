@@ -18,10 +18,12 @@
   <h1>PDF to Text</h1>
   <input type="file" id="pdf-input" accept="application/pdf">
   <button id="convert-btn">Convert</button>
+  <progress id="convert-progress" value="0" max="100" style="display:none"></progress>
   <a id="download-link" style="display:none"></a>
   <pre id="text-output"></pre>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
   <script type="module">
+    const progress = document.getElementById('convert-progress');
     document.getElementById('convert-btn').addEventListener('click', async () => {
       const input = document.getElementById('pdf-input');
       if (!input.files.length) {
@@ -32,12 +34,16 @@
       const buffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
       let text = '';
+      progress.style.display = 'block';
+      progress.value = 0;
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const content = await page.getTextContent();
         const pageText = content.items.map(it => it.str).join(' ');
         text += pageText + '\n';
+        progress.value = (i / pdf.numPages) * 100;
       }
+      progress.style.display = 'none';
       document.getElementById('text-output').textContent = text;
       const blob = new Blob([text], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
