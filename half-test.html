@@ -16,7 +16,7 @@
   <input type="file" id="pdf-input" accept="application/pdf" />
   <button id="parse-btn">Parse Halves</button>
   <progress id="upload-progress" value="0" max="100" style="display:none"></progress>
-  <progress id="split-progress" value="0" max="100" style="display:none"></progress>
+  <progress id="parse-progress" value="0" max="100" style="display:none"></progress>
   <div id="halves-container"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
@@ -57,7 +57,7 @@
 
       const file = input.files[0];
       const uploadBar = document.getElementById('upload-progress');
-      const splitBar = document.getElementById('split-progress');
+      const parseBar = document.getElementById('parse-progress');
 
       uploadBar.style.display = 'block';
       uploadBar.value = 0;
@@ -72,15 +72,15 @@
         uploadBar.value = 100;
         uploadBar.style.display = 'none';
 
-        splitBar.style.display = 'block';
-        splitBar.value = 0;
+        parseBar.style.display = 'block';
+        parseBar.value = 0;
 
         const buffer = new Uint8Array(reader.result);
         const { firstBytes, secondBytes } = await splitHalves(buffer, pct => {
-          splitBar.value = pct;
+          parseBar.value = pct;
         });
 
-        splitBar.style.display = 'none';
+        parseBar.style.display = 'none';
 
         const container = document.getElementById('halves-container');
         container.innerHTML = '';
