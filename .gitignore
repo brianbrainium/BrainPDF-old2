@@ -1,2 +1,4 @@
 # Ignore user files
 *.zip
+node_modules/
+package-lock.json
