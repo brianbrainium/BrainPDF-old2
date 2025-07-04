@@ -7,3 +7,9 @@ body { font-family: Arial, sans-serif; margin: 2rem; }
   margin: 1rem 0;
 }
 
+#version-info {
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #555;
+}
+

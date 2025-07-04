@@ -15,6 +15,7 @@ BrainPDF is a local‑first toolkit for splitting and exporting large PDF docume
 - **Offline libraries** – caches external libraries and plugins for offline use.
 - **Plugin API** – register custom actions such as OCR or summarisation.
 - **Built-in OCR plugin** – extract text from scanned PDFs on export.
+- **Half-page parsing helper** – load only the first half of a PDF for tests.
 
 ## Development
 
@@ -29,3 +30,13 @@ When testing the oversize-file guardrail on machines with plenty of RAM, add
 `https://brianbrainium.github.io/BrainPDF/?maxUploadMB=10`  
 The banner will show "(debug override)", and uploads above that value will be
 rejected. Remove the query string to return to automatic detection.
+
+## Version
+
+Current version: **1.0.0**. The latest update introduces a helper that parses
+only the first half of pages from a PDF for testing purposes.
+
+### Testing the new feature
+
+Run `npm test` to execute the included Node script which verifies the half-page
+parsing helper.

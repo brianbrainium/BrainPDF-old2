@@ -16,6 +16,13 @@ const exportBtn      = document.getElementById('export-btn');
 const splitSections  = document.getElementById('split-sections');
 const splitSize      = document.getElementById('split-size');
 
+const APP_VERSION    = '1.0.0';
+const NEW_FEATURE    = 'Half-page parsing for tests';
+const versionInfo    = document.getElementById('version-info');
+if (versionInfo) {
+  versionInfo.textContent = `Version ${APP_VERSION} – New: ${NEW_FEATURE}`;
+}
+
 let pdfDoc;
 let toc = [];
 
