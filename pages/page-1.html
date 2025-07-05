@@ -18,12 +18,17 @@
   <h1>PDF to Text</h1>
   <input type="file" id="pdf-input" accept="application/pdf">
   <button id="convert-btn">Convert</button>
+  <p id="pdf-size"></p>
+  <p id="txt-size"></p>
   <progress id="convert-progress" value="0" max="100" style="display:none"></progress>
   <a id="download-link" style="display:none"></a>
   <pre id="text-output"></pre>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.162/pdf.min.js"></script>
   <script type="module">
     const progress = document.getElementById('convert-progress');
+    const pdfSizeEl = document.getElementById('pdf-size');
+    const txtSizeEl = document.getElementById('txt-size');
+    const formatBytes = bytes => (bytes / (1024 * 1024)).toFixed(2) + ' MB';
     document.getElementById('convert-btn').addEventListener('click', async () => {
       const input = document.getElementById('pdf-input');
       if (!input.files.length) {
@@ -31,6 +36,7 @@
         return;
       }
       const file = input.files[0];
+      pdfSizeEl.textContent = 'PDF size: ' + formatBytes(file.size);
       const buffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise;
       let text = '';
@@ -47,6 +53,7 @@
       progress.style.display = 'none';
       document.getElementById('text-output').textContent = text;
       const blob = new Blob([text], { type: 'text/plain' });
+      txtSizeEl.textContent = 'Estimated TXT size: ' + formatBytes(blob.size);
       const url = URL.createObjectURL(blob);
       const link = document.getElementById('download-link');
       link.href = url;

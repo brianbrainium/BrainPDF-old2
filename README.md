@@ -17,6 +17,7 @@ BrainPDF is a local‑first toolkit for splitting and exporting large PDF docume
 - **Built-in OCR plugin** – extract text from scanned PDFs on export.
 - **Half-page parsing helper** – load only the first half of a PDF for tests.
 - **Memory usage test page** – measure processing memory to refine upload limits.
+- **PDF to text converter** – displays the original PDF size and estimated TXT output size during conversion.
 
 ## Development
 
