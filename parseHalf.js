@@ -1,4 +1,3 @@
-const fs = require('fs');
 const { PDFDocument } = require('pdf-lib');
 
 /**
@@ -40,4 +39,24 @@ async function extractHalves(pdfBytes) {
   };
 }
 
-module.exports = { extractHalf, extractHalves };
+/**
+ * Split a PDF file into chunks with a maximum number of pages per chunk.
+ * @param {Uint8Array|Buffer} pdfBytes - The PDF file bytes.
+ * @param {number} limit - Maximum pages per chunk.
+ * @returns {Promise<Uint8Array[]>} Array of PDF bytes for each chunk.
+ */
+async function splitByPageCount(pdfBytes, limit) {
+  const doc = await PDFDocument.load(pdfBytes);
+  const total = doc.getPageCount();
+  const chunks = [];
+  for (let i = 0; i < total; i += limit) {
+    const count = Math.min(limit, total - i);
+    const newPdf = await PDFDocument.create();
+    const pages = await newPdf.copyPages(doc, Array.from({ length: count }, (_, j) => i + j));
+    pages.forEach(p => newPdf.addPage(p));
+    chunks.push(await newPdf.save());
+  }
+  return chunks;
+}
+
+module.exports = { extractHalf, extractHalves, splitByPageCount };
