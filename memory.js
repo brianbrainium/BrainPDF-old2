@@ -15,8 +15,10 @@ async function measureMemory(file) {
   const typedarray = new Uint8Array(arrayBuffer);
   const pdfDoc = await pdfjsLib.getDocument({ data: typedarray }).promise;
   const after = performance.memory.usedJSHeapSize;
-  const delta = after - before;
+  const measured = after - before;
   await pdfDoc.destroy();
+
+  const delta = measured > 0 ? measured : file.size;
 
   const deviceMemGB = navigator.deviceMemory || 0;
   const availMB = deviceMemGB ? deviceMemGB * 1024 : 0;
@@ -28,7 +30,8 @@ async function measureMemory(file) {
   const availStr = availMB ? availMB.toFixed(2) + ' MB' : 'unknown';
 
   report.textContent =
-    `Used memory: ${formatBytes(delta)}\n` +
+    `File size: ${formatBytes(file.size)}\n` +
+    `Estimated used memory: ${formatBytes(delta)}\n` +
     `Approx. available memory: ${availStr}\n` +
     `Recommended maximum upload: ${maxUploadMB} MB`;
 }
