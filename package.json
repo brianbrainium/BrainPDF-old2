@@ -13,6 +13,7 @@
   "dependencies": {
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
-    "pdfjs-dist": "^5.3.31"
+    "pdfjs-dist": "^5.3.31",
+    "preact": "^10.26.9"
   }
 }
