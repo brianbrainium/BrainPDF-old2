@@ -38,6 +38,8 @@ rejected. Remove the query string to return to automatic detection.
 
 Current version: **1.0.0**. The latest update introduces a helper that parses
 only the first half of pages from a PDF for testing purposes.
+The home page now fetches the version from `package.json` so it shows
+the current GitHub version automatically.
 
 ### Testing the new feature
 
