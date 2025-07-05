@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Parser</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <nav>
+    <a href="../index.html">Home</a>
+    <a href="../half-test.html">Half-page Parser</a>
+    <a href="../memory.html">Memory Calculator</a>
+    <a href="page-1.html">PDF to Text</a>
+    <a href="page-2.html">TOC Viewer</a>
+    <a href="page-3.html">Size Checker</a>
+    <a href="page-4.html">PDF Parser</a>
+  </nav>
+  <h1>PDF Parser</h1>
+  <input type="file" id="pdf-input" accept="application/pdf" />
+  <label>Pages to parse: <input type="number" id="page-count" value="1" min="1" /></label>
+  <button id="parse-btn">Parse</button>
+  <div id="file-size"></div>
+  <progress id="upload-progress" value="0" max="100" style="display:none"></progress>
+  <progress id="parse-progress" value="0" max="100" style="display:none"></progress>
+  <div id="result-container"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <script>
+    function formatMB(bytes) {
+      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+    }
+
+    async function extractPages(buffer, count, progressCb) {
+      if (progressCb) progressCb(10);
+      const doc = await PDFLib.PDFDocument.load(buffer);
+      if (progressCb) progressCb(40);
+      const total = doc.getPageCount();
+      const num = Math.min(count, total);
+      const part = await PDFLib.PDFDocument.create();
+      const pages = await part.copyPages(doc, Array.from({ length: num }, (_, i) => i));
+      pages.forEach(p => part.addPage(p));
+      if (progressCb) progressCb(80);
+      const bytes = await part.save();
+      if (progressCb) progressCb(100);
+      return { bytes, num };
+    }
+
+    document.getElementById('parse-btn').addEventListener('click', () => {
+      const input = document.getElementById('pdf-input');
+      if (!input.files.length) {
+        alert('Please select a PDF file first.');
+        return;
+      }
+
+      const file = input.files[0];
+      document.getElementById('file-size').textContent = `File size: ${formatMB(file.size)}`;
+      const count = parseInt(document.getElementById('page-count').value, 10) || 1;
+      const uploadBar = document.getElementById('upload-progress');
+      const parseBar = document.getElementById('parse-progress');
+
+      uploadBar.style.display = 'block';
+      uploadBar.value = 0;
+
+      const reader = new FileReader();
+      reader.onprogress = e => {
+        if (e.lengthComputable) {
+          uploadBar.value = (e.loaded / e.total) * 100;
+        }
+      };
+      reader.onload = async () => {
+        uploadBar.value = 100;
+        uploadBar.style.display = 'none';
+
+        parseBar.style.display = 'block';
+        parseBar.value = 0;
+
+        const buffer = new Uint8Array(reader.result);
+        const { bytes } = await extractPages(buffer, count, pct => {
+          parseBar.value = pct;
+        });
+
+        parseBar.style.display = 'none';
+
+        const container = document.getElementById('result-container');
+        container.innerHTML = '';
+
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const frame = document.createElement('iframe');
+        frame.src = url;
+        frame.width = '100%';
+        frame.height = '400';
+        frame.style.marginTop = '1rem';
+        const sizeInfo = document.createElement('div');
+        sizeInfo.textContent = `Parsed size: ${formatMB(bytes.byteLength)}`;
+        container.appendChild(sizeInfo);
+        container.appendChild(frame);
+      };
+
+      reader.readAsArrayBuffer(file);
+    });
+  </script>
+  <script>
+    document.querySelectorAll('nav a').forEach(a => {
+      if (a.getAttribute('href').split('/').pop() === window.location.pathname.split('/').pop()) {
+        a.classList.add('active');
+      }
+    });
+  </script>
+</body>
+</html>
